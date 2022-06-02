@@ -1,5 +1,6 @@
 package me.all298lie;
 
+import me.all298lie.commands.Dice;
 import me.all298lie.commands.Profile;
 import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.Activity;
@@ -30,6 +31,11 @@ public class LieBot extends ListenerAdapter {
                         .addOptions(new OptionData(OptionType.USER, "유저", "프로필을 확인할 유저"))
         );
 
+        // /주사위 (숫자)
+        commands.addCommands(
+                Commands.slash("주사위", "1에서 100까지의 눈금을 가진 주사위를 던집니다.")
+        );
+
         commands.queue();
     }
 
@@ -39,6 +45,8 @@ public class LieBot extends ListenerAdapter {
 
         switch (event.getName()) {
             case "프로필" -> Profile.run(event);
+
+            case "주사위" -> Dice.run(event);
         }
     }
 }
