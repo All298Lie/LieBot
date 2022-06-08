@@ -105,6 +105,7 @@ fabric.properties
 out
 gen
 ### Gradle template
+.downloads
 .gradle
 **/build/
 !src/**/build/
