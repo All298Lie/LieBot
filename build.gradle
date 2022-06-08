@@ -20,6 +20,7 @@ repositories {
 dependencies {
     implementation("net.dv8tion:JDA:$jdaVersion")
     implementation("ch.qos.logback:logback-classic:1.2.8")
+    implementation("org.seleniumhq.selenium:selenium-java:4.2.1")
 }
 
 compileJava.options.encoding = 'UTF-8'
