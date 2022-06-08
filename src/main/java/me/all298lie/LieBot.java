@@ -48,6 +48,12 @@ public class LieBot extends ListenerAdapter {
                                 .setRequired(true))
         );
 
+        commands.addCommands(
+                Commands.slash("정보", "메이플 유저 정보를 maple.gg에서 불러옵니다.")
+                        .addOptions(new OptionData(OptionType.STRING, "닉네임", "정보를 확인할 닉네임")
+                                .setRequired(true))
+        );
+
         commands.queue();
     }
 
@@ -61,6 +67,8 @@ public class LieBot extends ListenerAdapter {
             case "주사위" -> Dice.run(event);
 
             case "분배금" -> MapleStory.runDistributionMoney(event);
+
+            case "정보" -> MapleStory.runUserInfo(event);
         }
     }
 }
