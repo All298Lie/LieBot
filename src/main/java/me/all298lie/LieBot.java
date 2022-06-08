@@ -1,6 +1,7 @@
 package me.all298lie;
 
 import me.all298lie.commands.Dice;
+import me.all298lie.commands.MapleStory;
 import me.all298lie.commands.Profile;
 import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.Activity;
@@ -36,6 +37,17 @@ public class LieBot extends ListenerAdapter {
                 Commands.slash("주사위", "1에서 100까지의 눈금을 가진 주사위를 던집니다.")
         );
 
+        // /분배금 (금액) (인원수)
+        commands.addCommands(
+                Commands.slash("분배금", "옥션에서 판매한 아이템의 수수료를 계산해 분배금을 책정합니다.")
+                        .addOptions(new OptionData(OptionType.INTEGER, "금액", "아이템 가격")
+                                .setMinValue(1)
+                                .setRequired(true))
+                        .addOptions(new OptionData(OptionType.INTEGER, "인원_수", "분배해줄 인원")
+                                .setMinValue(1)
+                                .setRequired(true))
+        );
+
         commands.queue();
     }
 
@@ -47,6 +59,8 @@ public class LieBot extends ListenerAdapter {
             case "프로필" -> Profile.run(event);
 
             case "주사위" -> Dice.run(event);
+
+            case "분배금" -> MapleStory.runDistributionMoney(event);
         }
     }
 }
