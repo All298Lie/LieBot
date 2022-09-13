@@ -12,38 +12,66 @@ public class UserInfo {
     private final int topWorldRanking;
     private final int jobTotalRanking;
     private final int jobWorldRanking;
-    private final int mulungFloor;
-    private final int mulungTime;
-    private final String unionTier;
-    private final int unionLevel;
-    private final int theSeedFloor;
-    private final int theSeedTime;
+    private boolean isMulung = false;
+    private int mulungFloor;
+    private int mulungTime;
+    private boolean isUnion = false;
+    private String unionTier;
+    private int unionLevel;
+    private boolean isTheSeed = false;
+    private int theSeedFloor;
+    private int theSeedTime;
 
     public UserInfo(String username,
                     String worldname, int level, float exp, String job,
                     int popular, String guild,
                     int topTotalRanking, int topWorldRanking,
-                    int jobTotalRanking, int jobWorldRanking,
-                    int mulungFloor, int mulungTime,
-                    String unionTier, int unionLevel,
-                    int theSeedFloor, int theSeedTime) {
+                    int jobTotalRanking, int jobWorldRanking
+                    ) {
         this.username = username;
         this.worldname = worldname;
+
         this.level = level;
         this.exp = exp;
+
         this.job = job;
         this.popular = popular;
         this.guild = guild;
+
         this.topTotalRanking = topTotalRanking;
         this.topWorldRanking = topWorldRanking;
         this.jobTotalRanking = jobTotalRanking;
         this.jobWorldRanking = jobWorldRanking;
+
+        this.isMulung = true;
         this.mulungFloor = mulungFloor;
         this.mulungTime = mulungTime;
+
+        this.isUnion = true;
         this.unionTier = unionTier;
         this.unionLevel = unionLevel;
+
+        this.isTheSeed = true;
         this.theSeedFloor = theSeedFloor;
         this.theSeedTime = theSeedTime;
+    }
+
+    public void setMulung(int floor, int time) {
+        this.isMulung = true;
+        this.mulungFloor = floor;
+        this.mulungTime = time;
+    }
+
+    public void setUnion(String tier, int level) {
+        this.isUnion = true;
+        this.unionTier = tier;
+        this.unionLevel = level;
+    }
+
+    public void setTheSeed(int floor, int time) {
+        this.isTheSeed = true;
+        this.theSeedFloor = floor;
+        this.theSeedTime = time;
     }
 
     public String getUsername() {
@@ -90,27 +118,39 @@ public class UserInfo {
         return jobWorldRanking;
     }
 
+    public boolean isMulung() {
+        return isMulung;
+    }
+
     public int getMulungFloor() {
-        return mulungFloor;
+        return isMulung ? mulungFloor : -1;
     }
 
     public int getMulungTime() {
-        return mulungTime;
+        return isMulung ? mulungTime : -1;
+    }
+
+    public boolean isUnion() {
+        return isUnion;
     }
 
     public String getUnionTier() {
-        return unionTier;
+        return isUnion ? unionTier : null;
     }
 
     public int getUnionLevel() {
-        return unionLevel;
+        return isUnion ? unionLevel : -1;
+    }
+
+    public boolean isTheSeed() {
+        return isTheSeed;
     }
 
     public int getTheSeedFloor() {
-        return theSeedFloor;
+        return isTheSeed ? theSeedFloor : -1;
     }
 
     public int getTheSeedTime() {
-        return theSeedTime;
+        return isTheSeed ? theSeedTime : -1;
     }
 }

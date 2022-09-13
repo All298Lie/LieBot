@@ -70,12 +70,17 @@ public class MapleStory {
         try {
             driver.get(url);
             Thread.sleep(300);
+            try {
+                // 정보갱신 or 최신정보 버튼
+                String sync = driver.findElement(By.xpath("//*[@id=\"btn-sync\"]/span")).getText();
+                if (!sync.equals("최신정보")) {
+                    driver.findElement(By.xpath("//*[@id=\"btn-sync\"]")).click();
+                    Thread.sleep(1500);
+                }
+            } catch (NoSuchElementException e) {
 
-            // 정보갱신 or 최신정보 버튼
-            String sync = driver.findElement(By.xpath("//*[@id=\"btn-sync\"]/span")).getText();
-            if (!sync.equals("최신정보")) {
-                driver.findElement(By.xpath("//*[@id=\"btn-sync\"]")).click();
-                Thread.sleep(1500);
+                event.getHook().editOriginal("[" + nickname + "]은 존재하지 않는 캐릭터입니다.").queue();
+
             }
 
             // 크롤링
@@ -103,18 +108,48 @@ public class MapleStory {
             int jobWorldRanking = comma.parse(driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[4]/span")).getText().split("위")[0]).intValue();
 
             // 무릉 (sec)
-            int mulungFloor = Integer.parseInt(driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[1]/section/div/div[1]/div/h1")).getText().split(" 층")[0]);
-            String[] mulungTimeA = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[1]/section/div/div[1]/div/small")).getText().split("초")[0].split("분 ");
-            int mulungTime = Integer.parseInt(mulungTimeA[0]) * 60 + Integer.parseInt(mulungTimeA[1]);
+            boolean isMulung = true;
+            int mulungFloor = -1;
+            int mulungTime = -1;
+
+            try {
+                mulungFloor = Integer.parseInt(driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[1]/section/div/div[1]/div/h1")).getText().split(" 층")[0]);
+                String[] mulungTimeA = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[1]/section/div/div[1]/div/small")).getText().split("초")[0].split("분 ");
+                mulungTime = Integer.parseInt(mulungTimeA[0]) * 60 + Integer.parseInt(mulungTimeA[1]);
+
+            } catch (NoSuchElementException e) {
+                isMulung = false;
+
+            }
 
             // 유니온 (###)
-            String unionTier = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[3]/section/div/div/div")).getText();
-            int unionLevel = Integer.parseInt(driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[3]/section/div/div/span")).getText().split("\\.")[1]);
+            boolean isUnion = true;
+            String unionTier = null;
+            int unionLevel = -1;
+
+            try {
+                unionTier = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[3]/section/div/div/div")).getText();
+                unionLevel = Integer.parseInt(driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[3]/section/div/div/span")).getText().split("\\.")[1]);
+
+            } catch (NoSuchElementException e) {
+                isUnion = false;
+
+            }
 
             // 더 시드 (sec)
-            int theSeedFloor = Integer.parseInt(driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[2]/section/div/div/div/h1")).getText().split(" 층")[0]);
-            String[] theSeedTimeA = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[2]/section/div/div/div/small")).getText().split("초")[0].split("분 ");
-            int theSeedTime = Integer.parseInt(theSeedTimeA[0]) * 60 + Integer.parseInt(theSeedTimeA[1]);
+            boolean isTheSeed = true;
+            int theSeedFloor = -1;
+            int theSeedTime = -1;
+
+            try {
+                theSeedFloor = Integer.parseInt(driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[2]/section/div/div/div/h1")).getText().split(" 층")[0]);
+                String[] theSeedTimeA = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[2]/section/div/div/div/small")).getText().split("초")[0].split("분 ");
+                theSeedTime = Integer.parseInt(theSeedTimeA[0]) * 60 + Integer.parseInt(theSeedTimeA[1]);
+
+            } catch (NoSuchElementException e) {
+                isTheSeed = false;
+
+            }
 
             // 캐릭터 이미지 저장
             String profileUrl = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[1]/div/div[2]/img")).getAttribute("src");
@@ -131,11 +166,14 @@ public class MapleStory {
                     worldName, level, exp, job,
                     popular, guild,
                     topTotalRanking, topWorldRanking,
-                    jobTotalRanking, jobWorldRanking,
-                    mulungFloor, mulungTime,
-                    unionTier, unionLevel,
-                    theSeedFloor, theSeedTime
-                    );
+                    jobTotalRanking, jobWorldRanking
+            );
+            if (isMulung)
+                user.setMulung(mulungFloor, mulungTime);
+            if (isUnion)
+                user.setUnion(unionTier, unionLevel);
+            if (isTheSeed)
+                user.setTheSeed(theSeedFloor, theSeedTime);
 
             // 월드로고 주소
             String serverUrl;
@@ -165,9 +203,9 @@ public class MapleStory {
                     .addField("인기도", comma.format(user.getPopular()), true)
                     .addField("직업", user.getJob(), true)
                     .addField("길드", user.getGuild(), true)
-                    .addField("무릉도장", user.getMulungFloor() + "층 (" + user.getMulungTime()/60 + "분 " + user.getMulungTime()%60 + "초)", true)
-                    .addField("유니온", user.getUnionTier() + "\n Lv." + user.getUnionLevel(), true)
-                    .addField("더 시드", user.getTheSeedFloor() + "층 (" + user.getTheSeedTime()/60 + "분 " + user.getTheSeedTime()%60 + "초)", true)
+                    .addField("무릉도장", user.isMulung() ? (user.getMulungFloor() + "층 (" + user.getMulungTime()/60 + "분 " + user.getMulungTime()%60 + "초)") : "-", true)
+                    .addField("유니온", user.isUnion() ? (user.getUnionTier() + "\n Lv." + user.getUnionLevel()) : "-", true)
+                    .addField("더 시드", user.isTheSeed() ? (user.getTheSeedFloor() + "층 (" + user.getTheSeedTime()/60 + "분 " + user.getTheSeedTime()%60 + "초)") : "-", true)
                     .setThumbnail(serverUrl)
                     .setFooter(event.getUser().getAsTag())
                     .setImage("attachment://profile.png")
@@ -175,10 +213,6 @@ public class MapleStory {
                     .build();
 
             event.getHook().editOriginalEmbeds(embed).setFiles(file).queue();
-
-        } catch (NoSuchElementException e) {
-
-            event.getHook().editOriginal("[" + nickname + "]은 존재하지 않는 캐릭터입니다.").queue();
 
         } catch (InterruptedException | IOException | ParseException e) {
             throw new RuntimeException(e);
