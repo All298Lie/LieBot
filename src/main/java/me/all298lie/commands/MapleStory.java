@@ -1,29 +1,32 @@
 package me.all298lie.commands;
 
+import me.all298lie.UserInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.MessageBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
-import org.apache.commons.io.comparator.LastModifiedFileComparator;
-import org.apache.commons.io.filefilter.WildcardFileFilter;
+import net.dv8tion.jda.api.utils.FileUpload;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.Arrays;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MapleStory {
     private static final DecimalFormat money = new DecimalFormat("###,###");
     private static final String dir = System.getProperty("user.dir") + "\\.downloads\\userInfo";
+    private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
     private static WebDriver driver;
     private static ChromeOptions options;
@@ -53,8 +56,7 @@ public class MapleStory {
                 .setFooter(event.getUser().getAsTag())
                 .setColor(0x00b4d8)
                 .build();
-        Message message = new MessageBuilder(embed).build();
-        event.reply(message).queue();
+        event.replyEmbeds(embed).queue();
     }
 
     public static void runUserInfo(SlashCommandInteractionEvent event) {
@@ -67,51 +69,98 @@ public class MapleStory {
 
         try {
             driver.get(url);
+            Thread.sleep(300);
 
             // 정보갱신 or 최신정보 버튼
             String sync = driver.findElement(By.xpath("//*[@id=\"btn-sync\"]/span")).getText();
             if (!sync.equals("최신정보")) {
-                event.getHook().sendMessage("플레이어의 정보를 갱신 중...").queue();
                 driver.findElement(By.xpath("//*[@id=\"btn-sync\"]")).click();
                 Thread.sleep(300);
             }
 
-            // 프로필 저장 버튼
-            driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[4]/button[3]")).sendKeys(Keys.ENTER);
-            Thread.sleep(300);
+            // 크롤링
+            String worldName = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/h3/img")).getAttribute("alt");
+            String stringLevel = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[1]/ul/li[1]")).getText();
 
-            // 저장하기 버튼
-           driver.findElement(By.xpath("//*[@id=\"btn-save\"]")).sendKeys(Keys.ENTER);
-            Thread.sleep(2500);
+            int level = Integer.parseInt(stringLevel.split("\\.")[1].split("\\(")[0]);
+            float exp = Float.parseFloat(stringLevel.split("\\(")[1].split("%")[0]);
 
-            File file = getTheNewestFile("png");
-            File newFile = new File(dir + File.separator + nickname + ".png");
-            file.renameTo(newFile);
+            String job = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[1]/ul/li[2]")).getText();
+            int pop = Integer.parseInt(driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[1]/ul/li[3]/span[2]")).getText());
+            String guild = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[1]/a")).getText();
+            String topRank = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[2]/span")).getText() + " (" + driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[3]/span")).getText() + ")";
+            String jobRank = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[5]/span")).getText() + " (" + driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[4]/span")).getText() + ")";
 
-            event.getHook().sendFile(newFile).queue();
+            String mulungFloor = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[1]/section/div/div[1]/div/h1")).getText();
+            String mulungTime = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[1]/section/div/div[1]/div/small")).getText();
+            String unionTier = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[3]/section/div/div/div")).getText();
+            String unionLevel = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[3]/section/div/div/span")).getText();
+            String theSeedFloor = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[2]/section/div/div/div/h1")).getText();
+            String theSeedTime = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[2]/section/div/div/div/small")).getText();
+
+//            String profileUrl = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[1]/div/div[2]/img")).getAttribute("src");
+//            BufferedImage image = ImageIO.read(new URL(profileUrl));
+//            String time = format.format(new Date());
+//            String profileName = time + "_" + nickname + ".png";
+//            ImageIO.write(image, "png", new File(dir + File.separator + profileName));
+//            InputStream file = new URL(profileUrl).openStream();
+
+            // 정보 저장
+            UserInfo user = new UserInfo(
+                    nickname,
+                    worldName, level, exp, job,
+                    pop, guild, topRank, jobRank,
+                    mulungFloor, mulungTime,
+                    unionTier, unionLevel,
+                    theSeedFloor, theSeedTime
+                    );
+
+            // 월드로고 주소
+            String serverUrl;
+            switch (user.getWorldname()) {
+                case "오로라" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_4.png";
+                case "레드" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_5.png";
+                case "이노시스" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_6.png";
+                case "유니온" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_7.png";
+                case "스카니아" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_8.png";
+                case "루나" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_9.png";
+                case "제니스" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_10.png";
+                case "크로아" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_11.png";
+                case "베라" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_12.png";
+                case "엘리시움" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_13.png";
+                case "아케인" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_14.png";
+                case "노바" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_15.png";
+                case "리부트", "리부트2" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_2.png";
+                case "버닝", "버닝2", "버닝3", "버닝4" -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_16.png";
+                default -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_1.png";
+            }
+
+            MessageEmbed embed = new EmbedBuilder()
+                    .setTitle(user.getUsername() + "님의 정보")
+                    .addField("레벨", user.getLevel() + " (" + user.getExp() + "%)",true)
+                    .addField("종합 랭킹", user.getTopRank(), true)
+                    .addField("직업 랭킹", user.getJobRank(), true)
+                    .addField("인기도", user.getPopular()+"", true)
+                    .addField("직업", user.getJob(), true)
+                    .addField("길드", user.getGuild(), true)
+                    .addField("무릉도장", user.getMulungFloor() + " (" + user.getMulungTime() + ")", true)
+                    .addField("유니온", user.getUnionTier() + "\n" + user.getUnionLevel(), true)
+                    .addField("더 시드", user.getTheSeedFloor() + " (" + user.getTheSeedTime() + ")", true)
+                    .setThumbnail(serverUrl)
+                    .setFooter(event.getUser().getAsTag())
+                    .setColor(0x00b4d8)
+                    .build();
+
+            event.getHook().sendMessageEmbeds(embed).queue();
 
         } catch (NoSuchElementException e) {
 
-            event.getHook().sendMessage("[" + nickname + "]은 존재하지 않는 캐릭터터입니다.").queue();
+            event.getHook().editOriginal("[" + nickname + "]은 존재하지 않는 캐릭터입니다.").queue();
 
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
             driver.quit();
         }
-    }
-
-    public static File getTheNewestFile(String ext) {
-        File theNewestFile = null;
-        File directory = new File(dir);
-        FileFilter fileFilter = new WildcardFileFilter("*." + ext);
-        File[] files = directory.listFiles(fileFilter);
-
-        if (files.length > 0) {
-            Arrays.sort(files, LastModifiedFileComparator.LASTMODIFIED_REVERSE);
-            theNewestFile = files[0];
-        }
-
-        return theNewestFile;
     }
 }
