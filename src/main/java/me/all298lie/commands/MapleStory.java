@@ -195,7 +195,7 @@ public class MapleStory {
                 default -> serverUrl = "https://ssl.nexon.com/s2/game/maplestory/renewal/common/world_icon/icon_1.png";
             }
 
-            MessageEmbed embed = new EmbedBuilder()
+            EmbedBuilder embed = new EmbedBuilder()
                     .setTitle(user.getUsername() + "님의 정보")
                     .addField("레벨", user.getLevel() + " (" + user.getExp() + "%)",true)
                     .addField("종합 랭킹", comma.format(user.getTopTotalRanking()) + "위 (" + comma.format(user.getJobTotalRanking()) + "위)", true)
@@ -203,16 +203,27 @@ public class MapleStory {
                     .addField("인기도", comma.format(user.getPopular()), true)
                     .addField("직업", user.getJob(), true)
                     .addField("길드", user.getGuild(), true)
-                    .addField("무릉도장", user.isMulung() ? (user.getMulungFloor() + "층 (" + user.getMulungTime()/60 + "분 " + user.getMulungTime()%60 + "초)") : "-", true)
-                    .addField("유니온", user.isUnion() ? (user.getUnionTier() + "\n Lv." + user.getUnionLevel()) : "-", true)
-                    .addField("더 시드", user.isTheSeed() ? (user.getTheSeedFloor() + "층 (" + user.getTheSeedTime()/60 + "분 " + user.getTheSeedTime()%60 + "초)") : "-", true)
                     .setThumbnail(serverUrl)
                     .setFooter(event.getUser().getAsTag())
                     .setImage("attachment://profile.png")
-                    .setColor(0x00b4d8)
-                    .build();
+                    .setColor(0x00b4d8);
+            if (isMulung) {
+                embed.addField("무릉도장", user.getMulungFloor() + "층 (" + user.getMulungTime() / 60 + "분 " + user.getMulungTime() % 60 + "초)", true);
+            } else {
+                embed.addField("무릉도장", "-", true);
+            }
+            if (isUnion) {
+                embed.addField("유니온", (user.getUnionTier() + "\n Lv." + user.getUnionLevel()), true);
+            } else {
+                embed.addField("유니온", "-", true);
+            }
+            if (isTheSeed) {
+                embed.addField("더 시드", user.getTheSeedFloor() + "층 (" + user.getTheSeedTime()/60 + "분 " + user.getTheSeedTime()%60 + "초)", true);
+            } else {
+                embed.addField("더 시드", "-", true);
+            }
 
-            event.getHook().editOriginalEmbeds(embed).setFiles(file).queue();
+            event.getHook().editOriginalEmbeds(embed.build()).setFiles(file).queue();
 
         } catch (InterruptedException | IOException | ParseException e) {
             throw new RuntimeException(e);
