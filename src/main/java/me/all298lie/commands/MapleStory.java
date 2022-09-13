@@ -75,7 +75,7 @@ public class MapleStory {
             String sync = driver.findElement(By.xpath("//*[@id=\"btn-sync\"]/span")).getText();
             if (!sync.equals("최신정보")) {
                 driver.findElement(By.xpath("//*[@id=\"btn-sync\"]")).click();
-                Thread.sleep(300);
+                Thread.sleep(1500);
             }
 
             // 크롤링
@@ -90,16 +90,17 @@ public class MapleStory {
             String job = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[1]/ul/li[2]")).getText();
 
             // 인기도 (###,###)
-            int pop = (int) comma.parse(driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[1]/ul/li[3]/span[2]")).getText());
+            String popularS = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[1]/ul/li[3]/span[2]")).getText();
+            int popular = comma.parse(popularS).intValue();
 
             // 길드
             String guild = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[1]/a")).getText();
 
             // 랭킹 (###,###)
-            int topTotalRanking = (int) comma.parse(driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[2]/span")).getText().split(" 위")[0]);
-            int topWorldRanking = (int) comma.parse(driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[3]/span")).getText().split("위")[0]);
-            int jobTotalRanking = (int) comma.parse(driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[5]/span")).getText().split("위")[0]);
-            int jobWorldRanking = (int) comma.parse(driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[4]/span")).getText().split("위")[0]);
+            int topTotalRanking = comma.parse(driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[2]/span")).getText().split(" 위")[0]).intValue();
+            int topWorldRanking = comma.parse(driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[3]/span")).getText().split("위")[0]).intValue();
+            int jobTotalRanking = comma.parse(driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[5]/span")).getText().split("위")[0]).intValue();
+            int jobWorldRanking = comma.parse(driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[2]/div[3]/div[4]/span")).getText().split("위")[0]).intValue();
 
             // 무릉 (sec)
             int mulungFloor = Integer.parseInt(driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[1]/section/div/div[1]/div/h1")).getText().split(" 층")[0]);
@@ -128,7 +129,7 @@ public class MapleStory {
             UserInfo user = new UserInfo(
                     nickname,
                     worldName, level, exp, job,
-                    pop, guild,
+                    popular, guild,
                     topTotalRanking, topWorldRanking,
                     jobTotalRanking, jobWorldRanking,
                     mulungFloor, mulungTime,
@@ -159,8 +160,8 @@ public class MapleStory {
             MessageEmbed embed = new EmbedBuilder()
                     .setTitle(user.getUsername() + "님의 정보")
                     .addField("레벨", user.getLevel() + " (" + user.getExp() + "%)",true)
-                    .addField("종합 랭킹", user.getTopTotalRanking() + "위 (" + user.getJobTotalRanking() + "위)", true)
-                    .addField("월드 랭킹", user.getTopWorldRanking() + "위 (" + user.getJobWorldRanking() + "위)", true)
+                    .addField("종합 랭킹", comma.format(user.getTopTotalRanking()) + "위 (" + comma.format(user.getJobTotalRanking()) + "위)", true)
+                    .addField("월드 랭킹", comma.format(user.getTopWorldRanking()) + "위 (" + comma.format(user.getJobWorldRanking()) + "위)", true)
                     .addField("인기도", comma.format(user.getPopular()), true)
                     .addField("직업", user.getJob(), true)
                     .addField("길드", user.getGuild(), true)
