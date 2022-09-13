@@ -4,6 +4,7 @@ import me.all298lie.UserInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.utils.AttachedFile;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -14,6 +15,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -98,12 +100,14 @@ public class MapleStory {
             String theSeedFloor = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[2]/section/div/div/div/h1")).getText();
             String theSeedTime = driver.findElement(By.xpath("//*[@id=\"app\"]/div[2]/div/section/div[1]/div[2]/section/div/div/div/small")).getText();
 
-//            String profileUrl = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[1]/div/div[2]/img")).getAttribute("src");
-//            BufferedImage image = ImageIO.read(new URL(profileUrl));
-//            String time = format.format(new Date());
-//            String profileName = time + "_" + nickname + ".png";
-//            ImageIO.write(image, "png", new File(dir + File.separator + profileName));
-//            InputStream file = new URL(profileUrl).openStream();
+            // 캐릭터 이미지 저장
+            String profileUrl = driver.findElement(By.xpath("//*[@id=\"user-profile\"]/section/div[2]/div[1]/div/div[2]/img")).getAttribute("src");
+            String time = format.format(new Date());
+            String profileName = time + "_" + nickname + ".png";
+            BufferedImage image = ImageIO.read(new URL(profileUrl));
+            ImageIO.write(image, "png", new File(dir + File.separator + profileName));
+
+            FileUpload file = FileUpload.fromData(new File(dir + File.separator + profileName), "profile.png");
 
             // 정보 저장
             UserInfo user = new UserInfo(
@@ -148,16 +152,21 @@ public class MapleStory {
                     .addField("더 시드", user.getTheSeedFloor() + " (" + user.getTheSeedTime() + ")", true)
                     .setThumbnail(serverUrl)
                     .setFooter(event.getUser().getAsTag())
+                    .setImage("attachment://profile.png")
                     .setColor(0x00b4d8)
                     .build();
 
-            event.getHook().sendMessageEmbeds(embed).queue();
+            event.getHook().editOriginalEmbeds(embed).setFiles(file).queue();
 
         } catch (NoSuchElementException e) {
 
             event.getHook().editOriginal("[" + nickname + "]은 존재하지 않는 캐릭터입니다.").queue();
 
         } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
             driver.quit();
