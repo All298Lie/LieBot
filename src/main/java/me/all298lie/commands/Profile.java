@@ -1,9 +1,7 @@
 package me.all298lie.commands;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -17,7 +15,6 @@ public class Profile {
                 .setFooter(member.getUser().getAsTag())
                 .setColor(0x00b4d8)
                 .build();
-        Message message = new MessageBuilder(embed).build();
-        event.reply(message).queue();
+        event.replyEmbeds(embed).queue();
     }
 }
