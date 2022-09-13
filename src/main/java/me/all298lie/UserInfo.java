@@ -8,21 +8,25 @@ public class UserInfo {
     private final String job;
     private final int popular;
     private final String guild;
-    private final String topRank;
-    private final String jobRank;
-    private final String mulungFloor;
-    private final String mulungTime;
+    private final int topTotalRanking;
+    private final int topWorldRanking;
+    private final int jobTotalRanking;
+    private final int jobWorldRanking;
+    private final int mulungFloor;
+    private final int mulungTime;
     private final String unionTier;
-    private final String unionLevel;
-    private final String theSeedFloor;
-    private final String theSeedTime;
+    private final int unionLevel;
+    private final int theSeedFloor;
+    private final int theSeedTime;
 
     public UserInfo(String username,
                     String worldname, int level, float exp, String job,
-                    int popular, String guild, String topRank, String jobRank,
-                    String mulungFloor, String mulungTime,
-                    String unionTier, String unionLevel,
-                    String theSeedFloor, String theSeedTime) {
+                    int popular, String guild,
+                    int topTotalRanking, int topWorldRanking,
+                    int jobTotalRanking, int jobWorldRanking,
+                    int mulungFloor, int mulungTime,
+                    String unionTier, int unionLevel,
+                    int theSeedFloor, int theSeedTime) {
         this.username = username;
         this.worldname = worldname;
         this.level = level;
@@ -30,8 +34,10 @@ public class UserInfo {
         this.job = job;
         this.popular = popular;
         this.guild = guild;
-        this.topRank = topRank;
-        this.jobRank = jobRank;
+        this.topTotalRanking = topTotalRanking;
+        this.topWorldRanking = topWorldRanking;
+        this.jobTotalRanking = jobTotalRanking;
+        this.jobWorldRanking = jobWorldRanking;
         this.mulungFloor = mulungFloor;
         this.mulungTime = mulungTime;
         this.unionTier = unionTier;
@@ -68,19 +74,27 @@ public class UserInfo {
         return guild;
     }
 
-    public String getTopRank() {
-        return topRank;
+    public int getTopTotalRanking() {
+        return topTotalRanking;
     }
 
-    public String getJobRank() {
-        return jobRank;
+    public int getTopWorldRanking() {
+        return topWorldRanking;
     }
 
-    public String getMulungFloor() {
+    public int getJobTotalRanking() {
+        return jobTotalRanking;
+    }
+
+    public int getJobWorldRanking() {
+        return jobWorldRanking;
+    }
+
+    public int getMulungFloor() {
         return mulungFloor;
     }
 
-    public String getMulungTime() {
+    public int getMulungTime() {
         return mulungTime;
     }
 
@@ -88,15 +102,15 @@ public class UserInfo {
         return unionTier;
     }
 
-    public String getUnionLevel() {
+    public int getUnionLevel() {
         return unionLevel;
     }
 
-    public String getTheSeedFloor() {
+    public int getTheSeedFloor() {
         return theSeedFloor;
     }
 
-    public String getTheSeedTime() {
+    public int getTheSeedTime() {
         return theSeedTime;
     }
 }
